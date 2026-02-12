@@ -1,0 +1,131 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# .github/workflows/fleet-merge.yml
+#
+# Sequentially merges Jules-authored PRs: update branch → wait for CI → squash merge.
+# This workflow is self-contained — it uses only the gh CLI (pre-installed on runners).
+name: Fleet Sequential Merge
+
+on:
+  # Trigger when a Jules-created PR is opened
+  pull_request:
+    types: [opened]
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+concurrency:
+  group: fleet-merge
+  cancel-in-progress: false
+
+jobs:
+  sequential-merge:
+    # Only run for Jules-authored PRs or manual triggers
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.user.login == 'google-labs-jules' ||
+      endsWith(github.event.pull_request.user.login, '[bot]')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find and merge Jules PRs sequentially
+        run: |
+          set -euo pipefail
+
+          BASE_BRANCH="${{ github.event.pull_request.base.ref || 'main' }}"
+          MAX_CI_WAIT=600  # 10 minutes per PR
+
+          echo "🔍 Finding open Jules-authored PRs targeting ${BASE_BRANCH}..."
+
+          # Get all open PRs authored by Jules, sorted by creation date (oldest first)
+          PRS=$(gh pr list \
+            --state open \
+            --base "$BASE_BRANCH" \
+            --json number,headRefName,author \
+            --jq '[.[] | select(.author.login == "google-labs-jules" or (.author.login | endswith("[bot]")))] | sort_by(.number) | .[].number')
+
+          if [ -z "$PRS" ]; then
+            echo "ℹ️  No Jules-authored PRs found. Nothing to merge."
+            exit 0
+          fi
+
+          PR_COUNT=$(echo "$PRS" | wc -l | tr -d ' ')
+          echo "Found ${PR_COUNT} Jules PR(s) to merge."
+
+          for PR_NUM in $PRS; do
+            echo ""
+            echo "📦 Processing PR #${PR_NUM}..."
+
+            # Update branch from base
+            echo "  🔄 Updating branch from ${BASE_BRANCH}..."
+            gh pr update-branch "$PR_NUM" --rebase 2>/dev/null || true
+
+            # Wait for branch update to propagate
+            sleep 5
+
+            # Wait for CI checks to pass
+            echo "  🧪 Waiting for CI checks..."
+            ELAPSED=0
+            CI_PASSED=false
+
+            while [ $ELAPSED -lt $MAX_CI_WAIT ]; do
+              STATUS=$(gh pr checks "$PR_NUM" --json name,state --jq '[.[].state] | if length == 0 then "none" elif all(. == "SUCCESS" or . == "SKIPPED") then "pass" elif any(. == "FAILURE") then "fail" else "pending" end')
+
+              case "$STATUS" in
+                "pass")
+                  CI_PASSED=true
+                  break
+                  ;;
+                "none")
+                  echo "  ℹ️  No CI checks configured. Proceeding."
+                  CI_PASSED=true
+                  break
+                  ;;
+                "fail")
+                  echo "  ❌ CI failed for PR #${PR_NUM}. Skipping."
+                  break
+                  ;;
+                *)
+                  echo "  ⏳ CI pending... (${ELAPSED}s/${MAX_CI_WAIT}s)"
+                  sleep 30
+                  ELAPSED=$((ELAPSED + 30))
+                  ;;
+              esac
+            done
+
+            if [ "$CI_PASSED" = false ]; then
+              echo "  ⏭️  Skipping PR #${PR_NUM} (CI did not pass)"
+              continue
+            fi
+
+            # Squash merge
+            echo "  ✅ CI passed. Merging PR #${PR_NUM}..."
+            if gh pr merge "$PR_NUM" --squash --auto; then
+              echo "  🎉 PR #${PR_NUM} merged successfully."
+            else
+              echo "  ❌ Failed to merge PR #${PR_NUM}. Stopping sequential merge."
+              exit 1
+            fi
+
+            # Brief pause for merge to propagate before next PR
+            sleep 5
+          done
+
+          echo ""
+          echo "✅ Sequential merge complete."
