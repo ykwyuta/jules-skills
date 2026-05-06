@@ -37,3 +37,81 @@ skills/[skill-name]/
 ​Reusability: スクリプトはハードコードを避け、環境変数や引数を利用すること。
 ​Error Handling: scripts/ 内のコードには必ず例外処理を入れ、Julesがエラーで停止しないようにすること。
 ​Conciseness: プロンプト（SKILL.md）は簡潔かつ強力に。冗長な説明は時間を浪費させるため排除すること。
+## Project Structure
+
+```text
+.
+├── .gitignore
+├── Agents.md
+├── LICENSE
+├── README.md
+├── skills/
+│   ├── local-action-verification/
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── run-act.sh
+│   │   │   ├── install-act.sh
+│   │   ├── resources/
+│   │   │   ├── troubleshooting.md
+│   ├── automate-github-issues/
+│   │   ├── SKILL.md
+│   │   ├── tsconfig.json
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── setup.sh
+│   │   │   ├── fleet-dispatch.ts
+│   │   │   ├── types.ts
+│   │   │   ├── fleet-merge.ts
+│   │   │   ├── fleet-analyze.ts
+│   │   │   ├── fleet-plan.ts
+│   │   │   ├── github/
+│   │   │   │   ├── cache-plugin.ts
+│   │   │   │   ├── git.ts
+│   │   │   │   ├── markdown.ts
+│   │   │   │   ├── issues.ts
+│   │   │   ├── prompts/
+│   │   │   │   ├── analyze-issues.ts
+│   │   │   │   ├── bootstrap.ts
+│   │   ├── assets/
+│   │   │   ├── .env.example
+│   │   │   ├── fleet-merge.yml
+│   │   │   ├── fleet-dispatch.yml
+│   │   ├── resources/
+│   │   │   ├── architecture.md
+│   ├── generate-temp-ui-tests/
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── .gitkeep
+│   │   ├── assets/
+│   │   │   ├── template.spec.ts.example
+│   │   ├── resources/
+│   │   │   ├── .gitkeep
+│   ├── temp-file-ops/
+│   │   ├── bun.lock
+│   │   ├── SKILL.md
+│   │   ├── tsconfig.json
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── test.ts
+│   │   │   ├── temp-ops.ts
+│   │   ├── assets/
+│   │   │   ├── .gitkeep
+│   │   ├── resources/
+│   │   │   ├── .gitkeep
+│   ├── cleanup/
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── cleanup.ts
+│   ├── update-agents-md/
+│   │   ├── SKILL.md
+│   │   ├── README.md
+│   │   ├── scripts/
+│   │   │   ├── update-agents-md.ts
+│   │   ├── assets/
+│   │   ├── resources/
+```
