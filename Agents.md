@@ -37,3 +37,84 @@ skills/[skill-name]/
 ​Reusability: スクリプトはハードコードを避け、環境変数や引数を利用すること。
 ​Error Handling: scripts/ 内のコードには必ず例外処理を入れ、Julesがエラーで停止しないようにすること。
 ​Conciseness: プロンプト（SKILL.md）は簡潔かつ強力に。冗長な説明は時間を浪費させるため排除すること。
+
+## Project Structure
+
+```text
+.
+├── skills/
+│   ├── automate-github-issues/
+│   │   ├── assets/
+│   │   │   ├── .env.example
+│   │   │   ├── fleet-dispatch.yml
+│   │   │   └── fleet-merge.yml
+│   │   ├── resources/
+│   │   │   └── architecture.md
+│   │   ├── scripts/
+│   │   │   ├── github/
+│   │   │   │   ├── cache-plugin.ts
+│   │   │   │   ├── git.ts
+│   │   │   │   ├── issues.ts
+│   │   │   │   └── markdown.ts
+│   │   │   ├── prompts/
+│   │   │   │   ├── analyze-issues.ts
+│   │   │   │   └── bootstrap.ts
+│   │   │   ├── fleet-analyze.ts
+│   │   │   ├── fleet-dispatch.ts
+│   │   │   ├── fleet-merge.ts
+│   │   │   ├── fleet-plan.ts
+│   │   │   ├── setup.sh
+│   │   │   └── types.ts
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── SKILL.md
+│   │   └── tsconfig.json
+│   ├── cleanup/
+│   │   ├── scripts/
+│   │   │   └── cleanup.ts
+│   │   ├── README.md
+│   │   └── SKILL.md
+│   ├── generate-temp-ui-tests/
+│   │   ├── assets/
+│   │   │   └── template.spec.ts.example
+│   │   ├── resources/
+│   │   │   └── .gitkeep
+│   │   ├── scripts/
+│   │   │   └── .gitkeep
+│   │   ├── README.md
+│   │   └── SKILL.md
+│   ├── local-action-verification/
+│   │   ├── resources/
+│   │   │   └── troubleshooting.md
+│   │   ├── scripts/
+│   │   │   ├── install-act.sh
+│   │   │   └── run-act.sh
+│   │   ├── README.md
+│   │   └── SKILL.md
+│   ├── temp-file-ops/
+│   │   ├── assets/
+│   │   │   └── .gitkeep
+│   │   ├── resources/
+│   │   │   └── .gitkeep
+│   │   ├── scripts/
+│   │   │   ├── temp-ops.ts
+│   │   │   └── test.ts
+│   │   ├── bun.lock
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   ├── SKILL.md
+│   │   └── tsconfig.json
+│   └── update-project-structure/
+│       ├── assets/
+│       ├── resources/
+│       ├── scripts/
+│       │   └── update.ts
+│       ├── README.md
+│       └── SKILL.md
+├── .gitignore
+├── Agents.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+└── SECURITY.md
+```
