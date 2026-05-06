@@ -1,0 +1,67 @@
+import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+
+// --- Configuration ---
+const SCREEN_NAME = 'sample'; // ここに画面名を指定する
+const SCREENSHOT_DIR = path.resolve(process.cwd(), '.jules/ui-tests/screenshots');
+const LOG_DIR = path.resolve(process.cwd(), '.jules/ui-tests/logs');
+
+// 必要なディレクトリが存在しない場合は作成する
+if (!fs.existsSync(SCREENSHOT_DIR)) {
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
+}
+if (!fs.existsSync(LOG_DIR)) {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
+}
+
+// タイムスタンプ取得ユーティリティ
+const getTimestamp = () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const MM = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  return `${yyyy}${MM}${dd}${hh}${mm}${ss}`;
+};
+
+// ログ出力ユーティリティ
+const log = (message: string) => {
+  const logMessage = `[${new Date().toISOString()}] ${message}\n`;
+  console.log(logMessage.trim());
+  const logFilePath = path.join(LOG_DIR, `${SCREEN_NAME}-test.log`);
+  fs.appendFileSync(logFilePath, logMessage, 'utf8');
+};
+
+test.describe(`${SCREEN_NAME} screen tests`, () => {
+  test('basic render and interaction', async ({ page }) => {
+    log('Test started: basic render and interaction');
+
+    try {
+      // 1. ページ遷移
+      const url = 'https://example.com';
+      log(`Navigating to ${url}`);
+      await page.goto(url);
+
+      // 2. アサーションとインタラクションの例
+      await expect(page).toHaveTitle(/Example Domain/);
+      log('Title verified');
+
+      // 3. スクリーンショットの取得
+      const timestamp = getTimestamp();
+      const screenshotFileName = `${SCREEN_NAME}-${timestamp}.png`;
+      const screenshotPath = path.join(SCREENSHOT_DIR, screenshotFileName);
+
+      await page.screenshot({ path: screenshotPath });
+      log(`Screenshot saved to ${screenshotPath}`);
+
+    } catch (error) {
+      log(`Error occurred: ${(error as Error).message}`);
+      throw error;
+    } finally {
+      log('Test completed.');
+    }
+  });
+});
