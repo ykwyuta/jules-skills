@@ -1,0 +1,17 @@
+{
+  "name": "temp-file-ops",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun run scripts/test.ts"
+  },
+  "dependencies": {
+    "@google/jules-sdk": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
